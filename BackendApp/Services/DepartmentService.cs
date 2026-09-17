@@ -44,8 +44,9 @@ public class DepartmentService
         return MapToDepartmentDTO(department);
     }
 
-    public async Task<DepartmentResponseDto?> CreateAsync(CreateDepartmentDto dto)
+    public async Task<DepartmentResponseDto?> CreateDepartmentAsync(CreateDepartmentDto dto)
     {
+
         if (await _dbContext.Departments.AnyAsync(d => d.Code == dto.Code))
             return null; // Mã phòng ban đã tồn tại
 
@@ -65,7 +66,8 @@ public class DepartmentService
         return MapToDepartmentDTO(dept);
     }
 
-    public async Task<DepartmentResponseDto?> UpdateAsync(int id, UpdateDepartmentDto dto)
+
+    public async Task<DepartmentResponseDto?> UpdateDepartmentAsync(int id, UpdateDepartmentDto dto)
     {
         var dept = await _dbContext.Departments
             .Include(d => d.Manager)
@@ -87,7 +89,7 @@ public class DepartmentService
         return MapToDepartmentDTO(dept);
     }
 
-    public async Task<(bool Success, string Message)> DeleteAsync(int id)
+    public async Task<(bool Success, string Message)> DeleteDepartmentAsync(int id)
     {
         var dept = await _dbContext.Departments
             .Include(d => d.Employees)

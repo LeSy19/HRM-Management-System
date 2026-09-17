@@ -31,7 +31,7 @@ public class DepartmentsController : ControllerBase
     [Authorize(Roles = "Admin,HRManager")]
     public async Task<IActionResult> Create([FromBody] CreateDepartmentDto dto)
     {
-        var res = await _service.CreateAsync(dto);
+        var res = await _service.CreateDepartmentAsync(dto);
         if (res == null) return BadRequest(new { message = "Mã phòng ban đã tồn tại." });
         return CreatedAtAction(nameof(GetById), new { id = res.Id }, res);
     }
@@ -42,7 +42,7 @@ public class DepartmentsController : ControllerBase
     {
         try
         {
-            var res = await _service.UpdateAsync(id, dto);
+            var res = await _service.UpdateDepartmentAsync(id, dto);
             return res == null ? NotFound(new { message = "Không tìm thấy phòng ban." }) : Ok(res);
         }
         catch (ArgumentException ex)
@@ -55,7 +55,7 @@ public class DepartmentsController : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(int id)
     {
-        var (success, message) = await _service.DeleteAsync(id);
+        var (success, message) = await _service.DeleteDepartmentAsync(id);
         return success ? Ok(new { message }) : BadRequest(new { message });
     }
 }
