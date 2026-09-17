@@ -23,7 +23,7 @@ public class EmployeeService
             .Include(e => e.Department)
             .Include(e => e.JobTitle)
             .Include(e => e.Manager)
-            .Select(e => MapToDTO(e))
+            .Select(e => MapToEmployeeDTO(e))
             .ToListAsync();
     }
 
@@ -39,7 +39,7 @@ public class EmployeeService
 
         if (employee == null) return null;
 
-        return MapToDTO(employee);
+        return MapToEmployeeDTO(employee);
     }
 
     // 3. CREATE (Tạo mới nhân viên)
@@ -81,7 +81,7 @@ public class EmployeeService
         if (employee.JobTitleId.HasValue) await _context.Entry(employee).Reference(e => e.JobTitle).LoadAsync();
         if (employee.ManagerId.HasValue) await _context.Entry(employee).Reference(e => e.Manager).LoadAsync();
 
-        return MapToDTO(employee);
+        return MapToEmployeeDTO(employee);
     }
 
     // 4. UPDATE (Cập nhật thông tin nhân viên)
@@ -111,7 +111,7 @@ public class EmployeeService
 
         await _context.SaveChangesAsync();
 
-        return MapToDTO(employee);
+        return MapToEmployeeDTO(employee);
     }
 
     // 5. DELETE (Xóa nhân viên)
@@ -126,7 +126,7 @@ public class EmployeeService
     }
 
     // --- HÀM PHỤ TRỢ MAPPING DTO & SINH MÃ NHÂN VIÊN ---
-    private static EmployeeResponseDTO MapToDTO(Employee e)
+    private static EmployeeResponseDTO MapToEmployeeDTO(Employee e)
     {
         return new EmployeeResponseDTO(
             e.Id,

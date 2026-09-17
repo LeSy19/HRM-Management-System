@@ -41,6 +41,7 @@ builder.Services.AddHangfireServer();
 // 3. Đăng ký Services & Hangfire Job
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<EmployeeService>();
+builder.Services.AddScoped<DepartmentService>();
 
 // Cấu hình JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");
