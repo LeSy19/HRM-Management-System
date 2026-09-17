@@ -1,13 +1,14 @@
-namespace BackendApp.Controllers;
 
 using BackendApp.DTOs;
 using BackendApp.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using BackendApp.Configurations;
+
+namespace BackendApp.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
 public class DepartmentsController : ControllerBase
 {
     private readonly DepartmentService _service;
@@ -18,9 +19,11 @@ public class DepartmentsController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Policy = RolePolicySetup.Policies.Management)] // Admin/Manager xem danh sách
     public async Task<IActionResult> GetAll() => Ok(await _service.GetAllDepartmentsAsync());
 
     [HttpGet("{id:int}")]
+    [Authorize(Policy = RolePolicySetup.Policies.Management)] // Chỉ Admin hoặc Manager được tạo
     public async Task<IActionResult> GetById(int id)
     {
         var res = await _service.GetDepartmentByIdAsync(id);
@@ -28,7 +31,7 @@ public class DepartmentsController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin,HRManager")]
+    [Authorize(Policy = RolePolicySetup.Policies.Management)]
     public async Task<IActionResult> Create([FromBody] CreateDepartmentDto dto)
     {
         var res = await _service.CreateDepartmentAsync(dto);
@@ -37,7 +40,7 @@ public class DepartmentsController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
-    [Authorize(Roles = "Admin,HRManager")]
+    [Authorize(Policy = RolePolicySetup.Policies.Management)]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateDepartmentDto dto)
     {
         try
@@ -52,7 +55,7 @@ public class DepartmentsController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = RolePolicySetup.Policies.AdminOnly)]
     public async Task<IActionResult> Delete(int id)
     {
         var (success, message) = await _service.DeleteDepartmentAsync(id);

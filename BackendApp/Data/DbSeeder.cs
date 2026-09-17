@@ -12,7 +12,7 @@ public static class DbSeeder
             var roles = new List<Role>
             {
                 new Role { Name = "Admin", Description = "Quản trị viên hệ thống" },
-                new Role { Name = "HRManager", Description = "Quản lý nhân sự" },
+                new Role { Name = "Manager", Description = "Quản lý nhân sự" },
                 new Role { Name = "Employee", Description = "Nhân viên" }
             };
 
@@ -21,24 +21,29 @@ public static class DbSeeder
         }
 
         // 2. Seed tài khoản Admin mặc định nếu chưa có Employee nào
-        if (!await context.Employees.AnyAsync())
+        if (!await context.Employees.AnyAsync(e => e.Username == "admin"))
         {
-            var adminEmployee = new Employee
+            // Lấy Role Admin chuẩn từ Database
+            var adminRole = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Admin");
+
+            if (adminRole != null)
             {
-                EmployeeCode = "EMP-001",
-                Username = "admin",
-                Email = "admin@company.com",
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123"), // Mật khẩu mặc định: Admin@123
-                FullName = "System Administrator",
-                Status = "ACTIVE",
-                HireDate = DateTime.UtcNow,
-                RoleId = 1 // Gán Role Admin (Id = 1)
-            };
+                var adminEmployee = new Employee
+                {
+                    EmployeeCode = "EMP-001",
+                    Username = "admin",
+                    Email = "admin@company.com",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123"), // Mật khẩu: Admin@123
+                    FullName = "System Administrator",
+                    Status = "ACTIVE",
+                    HireDate = DateTime.UtcNow,
+                    RoleId = adminRole.Id // Gán RoleId tự động theo ID của Role Admin
+                };
 
-            await context.Employees.AddAsync(adminEmployee);
-            await context.SaveChangesAsync();
+                await context.Employees.AddAsync(adminEmployee);
+                await context.SaveChangesAsync();
+            }
         }
-
     }
 
 

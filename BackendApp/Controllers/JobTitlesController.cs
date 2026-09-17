@@ -2,12 +2,12 @@ using Microsoft.AspNetCore.Mvc;
 using BackendApp.DTOs;
 using BackendApp.Services;
 using Microsoft.AspNetCore.Authorization;
+using BackendApp.Configurations;
 
 namespace BackendApp.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
 public class JobTitlesController : ControllerBase
 {
     private readonly JobTitleService _service;

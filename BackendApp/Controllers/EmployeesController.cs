@@ -2,12 +2,12 @@ using BackendApp.DTOs;
 using BackendApp.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using BackendApp.Configurations;
 
 namespace BackendApp.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize] // Yêu cầu Đăng nhập mới được sử dụng API
 public class EmployeesController : ControllerBase
 {
     private readonly EmployeeService _employeeService;
@@ -19,6 +19,7 @@ public class EmployeesController : ControllerBase
 
     // GET: api/employees
     [HttpGet]
+    [Authorize(Policy = RolePolicySetup.Policies.Management)] // Admin/Manager xem danh sách
     public async Task<IActionResult> GetAll()
     {
         var employees = await _employeeService.GetAllEmployeesAsync();
@@ -38,7 +39,7 @@ public class EmployeesController : ControllerBase
 
     // POST: api/employees
     [HttpPost]
-    [Authorize(Roles = "Admin,HRManager")] // Chỉ Admin hoặc HR mới được tạo nhân viên
+    [Authorize(Policy = RolePolicySetup.Policies.Management)] // Admin/Manager tạo nhân viên
     public async Task<IActionResult> Create([FromBody] CreateEmployeeDTO dto)
     {
         try
@@ -57,7 +58,7 @@ public class EmployeesController : ControllerBase
 
     // PUT: api/employees/5
     [HttpPut("{id:int}")]
-    [Authorize(Roles = "Admin,HRManager")]
+    [Authorize(Policy = RolePolicySetup.Policies.StaffAccess)] // Admin/Manager/Employee mới được cập nhật nhân viên
     public async Task<IActionResult> Update(int id, [FromBody] UpdateEmployeeDTO dto)
     {
         try
@@ -76,7 +77,7 @@ public class EmployeesController : ControllerBase
 
     // DELETE: api/employees/5
     [HttpDelete("{id:int}")]
-    [Authorize(Roles = "Admin")] // Chỉ duy nhất Admin mới có quyền Xóa nhân viên
+    [Authorize(Policy = RolePolicySetup.Policies.AdminOnly)] // Chỉ Admin mới được xóa nhân viên
     public async Task<IActionResult> Delete(int id)
     {
         var success = await _employeeService.DeleteEmployeeAsync(id);

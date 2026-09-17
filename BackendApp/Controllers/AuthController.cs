@@ -7,6 +7,7 @@ namespace BackendApp.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[AllowAnonymous] // Mở khóa toàn bộ API trong Controller này
 public class AuthController : ControllerBase
 {
     private readonly AuthService _authService;
