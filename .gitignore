@@ -1,0 +1,20 @@
+## Visual Studio / .NET Core
+bin/
+obj/
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Configuration & Secrets (Bảo mật)
+appsettings.Development.json
+appsettings.json
+
+## Database / Migration logs
+*.log
+*.db
+
+## OS generated files
+.DS_Store
+Thumbs.db

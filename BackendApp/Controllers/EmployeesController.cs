@@ -1,0 +1,88 @@
+using BackendApp.DTOs;
+using BackendApp.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace BackendApp.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+[Authorize] // Yêu cầu Đăng nhập mới được sử dụng API
+public class EmployeesController : ControllerBase
+{
+    private readonly EmployeeService _employeeService;
+
+    public EmployeesController(EmployeeService employeeService)
+    {
+        _employeeService = employeeService;
+    }
+
+    // GET: api/employees
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
+    {
+        var employees = await _employeeService.GetAllEmployeesAsync();
+        return Ok(employees);
+    }
+
+    // GET: api/employees/5
+    [HttpGet("{id:int}")]
+    public async Task<IActionResult> GetById(int id)
+    {
+        var employee = await _employeeService.GetEmployeeByIdAsync(id);
+        if (employee == null)
+            return NotFound(new { message = $"Không tìm thấy Nhân viên có Id = {id}" });
+
+        return Ok(employee);
+    }
+
+    // POST: api/employees
+    [HttpPost]
+    [Authorize(Roles = "Admin,HRManager")] // Chỉ Admin hoặc HR mới được tạo nhân viên
+    public async Task<IActionResult> Create([FromBody] CreateEmployeeDTO dto)
+    {
+        try
+        {
+            var result = await _employeeService.CreateEmployeeAsync(dto);
+            if (result == null)
+                return BadRequest(new { message = "Username hoặc Email đã được sử dụng trong hệ thống." });
+
+            return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    // PUT: api/employees/5
+    [HttpPut("{id:int}")]
+    [Authorize(Roles = "Admin,HRManager")]
+    public async Task<IActionResult> Update(int id, [FromBody] UpdateEmployeeDTO dto)
+    {
+        try
+        {
+            var result = await _employeeService.UpdateEmployeeAsync(id, dto);
+            if (result == null)
+                return NotFound(new { message = $"Không tìm thấy Nhân viên có Id = {id}" });
+
+            return Ok(result);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    // DELETE: api/employees/5
+    [HttpDelete("{id:int}")]
+    [Authorize(Roles = "Admin")] // Chỉ duy nhất Admin mới có quyền Xóa nhân viên
+    public async Task<IActionResult> Delete(int id)
+    {
+        var success = await _employeeService.DeleteEmployeeAsync(id);
+        if (!success)
+            return NotFound(new { message = $"Không tìm thấy Nhân viên có Id = {id}" });
+
+        return Ok(new { message = $"Đã xóa thành công Nhân viên có Id = {id}" });
+    }
+}
