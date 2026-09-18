@@ -37,7 +37,14 @@ public class LeaveBalanceService
             .ToListAsync();
     }
 
-    // 2. Xem quỹ phép của tất cả nhân viên (HR/Admin quản lý)
+    // 2. Xem quỹ phép của tất cả nhân viên(HR/Admin quản lý)
+    //
+    // Luồng xử lý:
+    // - Xác định năm cần lọc (mặc định là năm hiện tại)
+    // - Tạo truy vấn cơ bản lọc theo năm
+    // - Nếu có tham số departmentId -> Lọc bổ sung theo phòng ban của nhân viên
+    // - Select dữ liệu ra dạng DTO (bao gồm tên nhân viên, mã nhân viên, tên loại phép)
+    // - Trả về danh sách quỹ phép cho Admin/HR
     public async Task<List<LeaveBalanceResponseDto>> GetAllBalancesAsync(int? year, int? departmentId)
     {
         // - Nếu có truyền year -> sử dụng year được truyền vào
@@ -75,6 +82,13 @@ public class LeaveBalanceService
 
 
     // 3. Cấp quỹ phép cá nhân
+    //
+    // Luồng xử lý:
+    // - Kiểm tra nhân viên và loại phép có tồn tại trong DB không
+    // - Kiểm tra xem nhân viên đã có quỹ phép loại này trong năm đó chưa
+    // - Nếu ĐÃ TỒN TẠI: Cập nhật lại TotalDays và tính lại RemainingDays = TotalDays - UsedDays
+    // - Nếu CHƯA TỒN TẠI: Tạo bản ghi LeaveBalance mới (UsedDays = 0, RemainingDays = TotalDays)
+    // - Lưu thay đổi vào Database và trả về DTO kết quả
     public async Task<(bool Success, string Message, LeaveBalanceResponseDto? Data)> AssignBalanceAsync(AssignLeaveBalanceDto dto)
     {
         // Check nhân viên & loại phép
@@ -84,7 +98,6 @@ public class LeaveBalanceService
         var leaveType = await _context.LeaveTypes.FindAsync(dto.LeaveTypeId);
         if (leaveType == null) return (false, "Loại phép không tồn tại.", null);
 
-        int currentYear = year ?? DateTime.UtcNow.Year;
         // Kiểm tra nhân viên đã được cấp quỹ phép
         // của loại phép này trong năm đó hay chưa
         //
@@ -131,6 +144,15 @@ public class LeaveBalanceService
     }
 
     // 4. Cấp quỹ phép hàng loạt cho TẤT CẢ nhân viên đang hoạt động (ACTIVE)
+    //
+    // Luồng xử lý:
+    // - Lấy danh sách tất cả nhân viên có trạng thái STATUS = "ACTIVE"
+    // - Khai báo 2 biến đếm: createdCount (số bản ghi tạo mới) và updatedCount (số bản ghi cập nhật)
+    // - Duyệt từng nhân viên:
+    //     + Nếu đã có quỹ phép loại đó trong năm -> Cập nhật TotalDays & RemainingDays (tăng updatedCount)
+    //     + Nếu chưa có -> Tạo mới bản ghi LeaveBalance (tăng createdCount)
+    // - Lưu tất cả thay đổi vào Database trong một đợt SaveChangesAsync()
+    // - Trả về số lượng bản ghi đã tạo mới và đã cập nhật
     public async Task<(int CreatedCount, int UpdatedCount)> BulkAssignAsync(BulkAssignLeaveBalanceDto dto)
     {
         var activeEmployees = await _context.Employees
@@ -179,6 +201,7 @@ public class LeaveBalanceService
         return (createdCount, updatedCount);
     }
 
+    // 5. Hàm Helper Mapping từ Entity LeaveBalance sang DTO
     public static LeaveBalanceResponseDto MapToLeaveBalanceDTO(Models.LeaveBalance lt)
     {
         return new LeaveBalanceResponseDto(

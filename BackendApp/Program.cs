@@ -47,6 +47,7 @@ builder.Services.AddScoped<DepartmentService>();
 builder.Services.AddScoped<JobTitleService>();
 builder.Services.AddScoped<LeaveTypeService>();
 builder.Services.AddScoped<LeaveBalanceService>();
+builder.Services.AddScoped<LeaveRequestService>();
 builder.Services.AddControllers();
 
 
