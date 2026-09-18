@@ -46,6 +46,7 @@ builder.Services.AddScoped<EmployeeService>();
 builder.Services.AddScoped<DepartmentService>();
 builder.Services.AddScoped<JobTitleService>();
 builder.Services.AddScoped<LeaveTypeService>();
+builder.Services.AddScoped<LeaveBalanceService>();
 builder.Services.AddControllers();
 
 
@@ -107,7 +108,15 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer((document, context, cancellationToken) =>
+    {
+        document.Info.Title = "CoreHR API Reference";
+        document.Info.Version = "v1";
+        return Task.CompletedTask;
+    });
+});
 builder.Services.AddAppAuthorizationPolicies();
 
 var app = builder.Build();
@@ -148,8 +157,9 @@ using (var scope = app.Services.CreateScope())
 // 5. Cấu hình Scalar UI trong môi trường Development
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
-    app.MapScalarApiReference();
+    // BẮT BUỘC: Thêm .AllowAnonymous() cho CẢ HAI endpoint này
+    app.MapOpenApi().AllowAnonymous();
+    app.MapScalarApiReference().AllowAnonymous();
 }
 
 app.UseCors("AllowFrontend");
