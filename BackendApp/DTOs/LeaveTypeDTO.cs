@@ -1,0 +1,20 @@
+namespace BackendApp.DTOs;
+
+
+public record LeaveTypeResponseDto(
+    int Id,
+    string Name,
+    decimal DaysAllowed
+);
+
+// DTO tạo mới loại phép
+public record CreateLeaveTypeDto(
+    string Name,
+    decimal DaysAllowed
+);
+
+// DTO cập nhật loại phép
+public record UpdateLeaveTypeDto(
+    string Name,
+    decimal DaysAllowed
+);

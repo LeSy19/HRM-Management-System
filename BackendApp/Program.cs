@@ -45,6 +45,7 @@ builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<EmployeeService>();
 builder.Services.AddScoped<DepartmentService>();
 builder.Services.AddScoped<JobTitleService>();
+builder.Services.AddScoped<LeaveTypeService>();
 builder.Services.AddControllers();
 
 

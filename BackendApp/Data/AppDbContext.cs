@@ -91,6 +91,13 @@ public class AppDbContext : DbContext
              .OnDelete(DeleteBehavior.Restrict);
         });
 
+        modelBuilder.Entity<LeaveType>(lt =>
+        {
+            lt.Property(x => x.DaysAllowed)
+        .HasPrecision(3, 1);
+        });
+
+
         // 5. LeaveBalance
         modelBuilder.Entity<LeaveBalance>(e =>
         {
