@@ -126,26 +126,27 @@ public class LeaveRequestService
             .ToListAsync();
     }
 
-    // 3. Manager xem đơn PENDING của nhân viên cấp dưới (Direct Reports) hoặc HR/Admin xem tất cả
+    // 3. Manager xem đơn PENDING của nhân viên thuộc Phòng ban quản lý HOẶC cấp dưới trực tiếp; HR/Admin xem tất cả
     //
-    // Luồng xử lý & Business Rules:
-    // - Tạo query lọc tất cả các đơn nghỉ phép có Status = "PENDING"
-    // - Include thông tin Nhân viên và Loại phép
-    // - BUSINESS RULE 3 (Phân quyền duyệt của Manager):
-    //     + Nếu KHÔNG PHẢI HR/Admin -> Chỉ lọc các đơn của nhân viên có ManagerId = currentUserId (Cấp dưới trực tiếp)
-    //     + Nếu LÀ HR/Admin -> Xem được toàn bộ đơn PENDING của cả công ty
-    // - Sắp xếp theo CreatedAt giảm dần và trả về danh sách DTO
+    // Đã cập nhật logic kiểm tra phân quyền:
+    // - Nếu LÀ HR/Admin: Lấy toàn bộ đơn PENDING.
+    // - Nếu KHÔNG PHẢI HR/Admin (Manager): Chỉ xem đơn của nhân viên mà:
+    //     + Manager là Người quản lý trực tiếp (lr.Employee.ManagerId == currentUserId)
+    //     + HOẶC Manager là Trưởng phòng của phòng ban đó (lr.Employee.Department.ManagerId == currentUserId)
     public async Task<List<LeaveRequestResponseDto>> GetPendingLeaveRequestsAsync(int currentUserId, bool isHRorAdmin)
     {
         var query = _dbContext.LeaveRequests
             .Include(lr => lr.Employee)
+                .ThenInclude(e => e.Department)
             .Include(lr => lr.LeaveType)
             .Where(lr => lr.Status == "PENDING");
 
-        // --- BUSINESS RULE 3: Manager chỉ xem đơn của cấp dưới trực tiếp (manager_id = currentUserId) ---
+        // --- BUSINESS RULE 3: Manager chỉ xem đơn của cấp dưới (loại trừ đơn của chính mình) ---
         if (!isHRorAdmin)
         {
-            query = query.Where(lr => lr.Employee.ManagerId == currentUserId);
+            query = query.Where(lr => lr.EmployeeId != currentUserId // Không cho Manager tự duyệt đơn của chính mình
+                                   && (lr.Employee.ManagerId == currentUserId
+                                       || (lr.Employee.Department != null && lr.Employee.Department.ManagerId == currentUserId)));
         }
 
         return await query
@@ -189,9 +190,22 @@ public class LeaveRequestService
         if (request.Status != "PENDING")
             return (false, "Đơn xin nghỉ này đã được xử lý trước đó.");
 
-        if (!isHRorAdmin && request.Employee.ManagerId != approverId)
-            return (false, "Bạn không có quyền duyệt đơn của nhân viên không thuộc cấp dưới trực tiếp.");
+        // 1. Kiểm tra đơn này có phải do chính người duyệt tự tạo hay không
+        bool isSelfApproval = request.EmployeeId == approverId;
 
+        if (isSelfApproval && !isHRorAdmin)
+        {
+            return (false, "Bạn không thể tự phê duyệt đơn xin nghỉ phép của chính mình. Đơn này cần được duyệt bởi Admin hoặc Quản lý cấp cao hơn.");
+        }
+
+        // 2. Kiểm tra quyền duyệt với nhân viên khác
+        bool isDirectManager = request.Employee.ManagerId == approverId;
+        bool isDepartmentManager = request.Employee.Department != null && request.Employee.Department.ManagerId == approverId;
+
+        if (!isHRorAdmin && !isDirectManager && !isDepartmentManager)
+        {
+            return (false, "Bạn không có quyền duyệt đơn của nhân viên này (không thuộc cấp dưới trực tiếp hoặc phòng ban do bạn quản lý).");
+        }
         using var transaction = await _dbContext.Database.BeginTransactionAsync();
         try
         {

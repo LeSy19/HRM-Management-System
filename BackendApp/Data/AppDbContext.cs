@@ -94,7 +94,7 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<LeaveType>(lt =>
         {
             lt.Property(x => x.DaysAllowed)
-        .HasPrecision(3, 1);
+            .HasPrecision(4, 1);
         });
 
 

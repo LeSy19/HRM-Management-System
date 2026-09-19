@@ -83,7 +83,9 @@ public class LeaveRequestsController : ControllerBase
         if (currentUserId == 0)
             return Unauthorized(new { message = "Không xác định được danh tính người dùng từ Token." });
 
-        bool isHRorAdmin = User.IsInRole(UserRoles.Admin) || User.IsInRole(UserRoles.Manager);
+        // Chỉ duy nhất Admin mới thấy hết toàn bộ đơn trong công ty
+        // Tài khoản có Role Manager sẽ trả về false -> Service sẽ lọc đúng đơn thuộc Phòng ban/Cấp dưới của Manager đó
+        bool isHRorAdmin = User.IsInRole(UserRoles.Admin);
 
         var pendingRequests = await _leaveRequestService.GetPendingLeaveRequestsAsync(currentUserId, isHRorAdmin);
         return Ok(pendingRequests);
@@ -106,7 +108,7 @@ public class LeaveRequestsController : ControllerBase
         if (approverId == 0)
             return Unauthorized(new { message = "Không xác định được danh tính người dùng từ Token." });
 
-        bool isHRorAdmin = User.IsInRole(UserRoles.Admin) || User.IsInRole(UserRoles.Manager);
+        bool isHRorAdmin = User.IsInRole(UserRoles.Admin);
 
         var (success, message) = await _leaveRequestService.ProcessLeaveRequestAsync(id, approverId, isHRorAdmin, dto);
 

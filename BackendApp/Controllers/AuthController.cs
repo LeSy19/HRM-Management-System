@@ -22,7 +22,7 @@ public class AuthController : ControllerBase
     {
         var (response, refreshToken) = await _authService.LoginAsync(dto);
         if (response == null)
-            return Unauthorized(new { message = "Tài khoản hoặc mật khẩu không chính xác hoặc đã bị khóa." });
+            return Unauthorized(new { message = "Tên đăng nhập hoặc mật khẩu không chính xác." });
 
         // Lưu Refresh Token vào Cookie an toàn (HttpOnly)
         SetRefreshTokenCookie(refreshToken);
