@@ -1,5 +1,7 @@
 using BackendApp.Data;
 using BackendApp.DTOs;
+using BackendApp.DTOs.Common;
+using BackendApp.Extensions;
 using BackendApp.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,9 +19,22 @@ public class DepartmentService
 
 
     // Lấy danh sách tất cả phòng ban
-    public async Task<List<DepartmentResponseDto>> GetAllDepartmentsAsync()
+    public async Task<PagedResult<DepartmentResponseDto>> GetAllDepartmentsAsync(DepartmentFilterRequestDTO request)
     {
-        return await _dbContext.Departments
+        var query = _dbContext.Departments
+            .AsNoTracking(); // Tối ưu truy vấn Read-Only
+
+        // Lọc / Tìm kiếm theo Tên hoặc Mã phòng ban (nếu có)
+        if (!string.IsNullOrWhiteSpace(request.SearchTerm))
+        {
+            var keyword = request.SearchTerm.Trim().ToLower();
+            query = query.Where(d => d.Name.ToLower().Contains(keyword)
+                                  || d.Code.ToLower().Contains(keyword));
+        }
+
+        // Projection sang DTO và OrderBy cố định trước khi phân trang
+        var dtoQuery = query
+            .OrderBy(d => d.Id)
             .Select(d => new DepartmentResponseDto(
                 d.Id,
                 d.Code,
@@ -28,8 +43,10 @@ public class DepartmentService
                 d.Manager != null ? d.Manager.FullName : null,
                 d.Employees.Count,
                 d.CreatedAt
-            ))
-            .ToListAsync();
+            ));
+
+        // Thực thi phân trang
+        return await dtoQuery.ToPagedListAsync(request.PageIndex, request.PageSize);
     }
 
     public async Task<DepartmentResponseDto?> GetDepartmentByIdAsync(int id)

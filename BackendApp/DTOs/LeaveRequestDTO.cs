@@ -1,4 +1,13 @@
+using BackendApp.DTOs.Common;
+
 namespace BackendApp.DTOs;
+
+public class LeaveRequestFilterRequestDTO : PaginationParam
+{
+    public string? SearchTerm { get; set; }
+
+    public int? DepartmentId { get; set; }
+}
 
 // Trả về thông tin đơn xin nghỉ
 public record LeaveRequestResponseDto(

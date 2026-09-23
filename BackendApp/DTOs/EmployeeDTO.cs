@@ -1,4 +1,13 @@
+using BackendApp.DTOs.Common;
+
 namespace BackendApp.DTOs;
+
+public class EmployeeFilterRequestDTO : PaginationParam
+{
+    public string? SearchTerm { get; set; }
+
+    public int? DepartmentId { get; set; }
+}
 
 // DTO dùng khi trả dữ liệu Employee ra ngoài
 public record EmployeeResponseDTO(

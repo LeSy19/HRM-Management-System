@@ -1,3 +1,5 @@
+using BackendApp.DTOs.Common;
+
 namespace BackendApp.DTOs;
 
 // Trả về thông tin quỹ phép của nhân viên

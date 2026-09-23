@@ -2,6 +2,8 @@ using BackendApp.Data;
 using BackendApp.Models;
 using Microsoft.EntityFrameworkCore;
 using BackendApp.DTOs;
+using BackendApp.DTOs.Common;
+using BackendApp.Extensions;
 
 namespace BackendApp.Services;
 
@@ -15,18 +17,39 @@ public class EmployeeService
         _context = context;
     }
 
-    // 1. READ ALL (Lấy danh sách nhân viên kèm đầy đủ quan hệ)
-    public async Task<List<EmployeeResponseDTO>> GetAllEmployeesAsync()
+    // 1. READ ALL - CÓ PHÂN TRANG
+    public async Task<PagedResult<EmployeeResponseDTO>> GetAllEmployeesAsync(EmployeeFilterRequestDTO request)
     {
-        return await _context.Employees
+        var query = _context.Employees
             .Include(e => e.Role)
             .Include(e => e.Department)
             .Include(e => e.JobTitle)
             .Include(e => e.Manager)
-            .Select(e => MapToEmployeeDTO(e))
-            .ToListAsync();
-    }
+            .AsNoTracking(); // Tối ưu hiệu năng cho thao tác đọc
 
+        // Lọc/Tìm kiếm (nếu Frontend gửi SearchTerm)
+        if (!string.IsNullOrWhiteSpace(request.SearchTerm))
+        {
+            var keyword = request.SearchTerm.Trim().ToLower();
+            query = query.Where(e => e.FullName.ToLower().Contains(keyword)
+                                  || e.Email.ToLower().Contains(keyword)
+                                  || e.EmployeeCode.ToLower().Contains(keyword));
+        }
+
+        // Lọc theo phòng ban (nếu Frontend gửi DepartmentId)
+        if (request.DepartmentId.HasValue)
+        {
+            query = query.Where(e => e.DepartmentId == request.DepartmentId.Value);
+        }
+
+        // Tạo Query mapping sang DTO
+        var dtoQuery = query
+            .OrderBy(e => e.Id) // BẮT BUỘC có OrderBy trước khi Skip/Take
+            .Select(e => MapToEmployeeDTO(e));
+
+        // Gọi Extension Method phân trang dùng chung
+        return await dtoQuery.ToPagedListAsync(request.PageIndex, request.PageSize);
+    }
     // 2. READ BY ID (Lấy nhân viên theo Id)
     public async Task<EmployeeResponseDTO?> GetEmployeeByIdAsync(int id)
     {
@@ -35,6 +58,7 @@ public class EmployeeService
             .Include(e => e.Department)
             .Include(e => e.JobTitle)
             .Include(e => e.Manager)
+            .AsNoTracking()
             .FirstOrDefaultAsync(e => e.Id == id);
 
         if (employee == null) return null;

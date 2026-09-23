@@ -1,4 +1,12 @@
+using BackendApp.DTOs.Common;
+
 namespace BackendApp.DTOs;
+
+public class DepartmentFilterRequestDTO : PaginationParam
+{
+    public string? SearchTerm { get; set; }
+
+}
 
 public record DepartmentResponseDto(
     int Id,

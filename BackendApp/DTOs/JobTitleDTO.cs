@@ -1,5 +1,12 @@
+using BackendApp.DTOs.Common;
+
 namespace BackendApp.DTOs;
 
+public class JobTitleFilterRequestDTO : PaginationParam
+{
+    public string? SearchTerm { get; set; }
+
+}
 public record JobTitleResponseDto(
     int Id,
     string TitleName,

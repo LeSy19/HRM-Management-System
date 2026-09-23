@@ -1,5 +1,13 @@
+using BackendApp.DTOs.Common;
+
 namespace BackendApp.DTOs;
 
+public class LeaveTypeFilterRequestDTO : PaginationParam
+{
+    public string? SearchTerm { get; set; }
+
+    public int? DepartmentId { get; set; }
+}
 
 public record LeaveTypeResponseDto(
     int Id,

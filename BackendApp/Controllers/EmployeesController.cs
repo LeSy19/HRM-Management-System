@@ -1,4 +1,5 @@
 using BackendApp.DTOs;
+using BackendApp.DTOs.Common;
 using BackendApp.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -20,10 +21,10 @@ public class EmployeesController : ControllerBase
     // GET: api/employees
     [HttpGet]
     [Authorize(Policy = RolePolicySetup.Policies.Management)] // Admin/Manager xem danh sách
-    public async Task<IActionResult> GetAll()
+    public async Task<ActionResult<PagedResult<EmployeeResponseDTO>>> GetAll([FromQuery] EmployeeFilterRequestDTO request)
     {
-        var employees = await _employeeService.GetAllEmployeesAsync();
-        return Ok(employees);
+        var result = await _employeeService.GetAllEmployeesAsync(request);
+        return Ok(result);
     }
 
     // GET: api/employees/5

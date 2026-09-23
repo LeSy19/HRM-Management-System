@@ -2,6 +2,8 @@ namespace BackendApp.Services;
 
 using BackendApp.Data;
 using BackendApp.DTOs;
+using BackendApp.DTOs.Common;
+using BackendApp.Extensions;
 using BackendApp.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,18 +17,32 @@ public class JobTitleService
     }
 
     // 1. READ ALL (Lấy danh sách chức danh kèm số lượng nhân viên)
-    public async Task<List<JobTitleResponseDto>> GetAllJobTitlesAsync()
+    public async Task<PagedResult<JobTitleResponseDto>> GetAllJobTitlesAsync(JobTitleFilterRequestDTO request)
     {
-        return await _context.JobTitles
-            .Include(j => j.Employees)
+        var query = _context.JobTitles.AsNoTracking();
+
+        // Tìm kiếm theo Chức danh (TitleName) hoặc Cấp bậc (Level)
+        if (!string.IsNullOrWhiteSpace(request.SearchTerm))
+        {
+            var keyword = request.SearchTerm.Trim().ToLower();
+            query = query.Where(j => j.TitleName.ToLower().Contains(keyword)
+                                  || j.Level.ToLower().Contains(keyword));
+        }
+
+        // Projection sang DTO và OrderBy trước khi phân trang
+        var dtoQuery = query
+            .OrderBy(j => j.Id)
             .Select(j => new JobTitleResponseDto(
                 j.Id,
                 j.TitleName,
                 j.Level,
                 j.Employees.Count
-            ))
-            .ToListAsync();
+            ));
+
+        // Thực thi phân trang
+        return await dtoQuery.ToPagedListAsync(request.PageIndex, request.PageSize);
     }
+
 
     // 2. READ BY ID (Lấy chức danh theo Id)
     public async Task<JobTitleResponseDto?> GetJobTitleByIdAsync(int id)
