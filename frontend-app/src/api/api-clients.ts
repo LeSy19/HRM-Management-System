@@ -6,7 +6,8 @@ const apiClient = axios.create({
     headers: {
         'Content-Type': 'application/json',
     },
-    timeout: 10000, // Timeout 10 giây
+    timeout: 10000,
+    withCredentials: true,
 });
 
 // 2. Request Interceptor: Tự động đính kèm Token
@@ -65,29 +66,24 @@ apiClient.interceptors.response.use(
             isRefreshing = true;
 
             try {
-                const refreshToken = localStorage.getItem('refresh_token');
+                const response = await axios.post(
+                    `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh-token`,
+                    {},
+                    {
+                        withCredentials: true,
+                    }
+                );
 
-                if (!refreshToken) {
-                    throw new Error('No refresh token available');
-                }
+                const { accessToken: newAccessToken } = response.data;
 
-                // Gọi API refresh token từ .NET Backend
-                const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/auth/refresh-token`, {
-                    refreshToken,
-                });
-
-                const { accessToken: newAccessToken, refreshToken: newRefreshToken } = response.data;
-
-                // Lưu token mới
                 localStorage.setItem('access_token', newAccessToken);
-                localStorage.setItem('refresh_token', newRefreshToken);
 
-                // Cập nhật header và thực hiện lại danh sách request bị chờ
                 processQueue(null, newAccessToken);
 
                 if (originalRequest.headers) {
                     originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
                 }
+
                 return apiClient(originalRequest);
             } catch (refreshError) {
                 processQueue(refreshError, null);
