@@ -1,3 +1,10 @@
+
+export interface DepartmentFilterRequestDTO {
+    pageIndex?: number;
+    pageSize?: number;
+    searchTerm?: string;
+}
+
 export interface DepartmentResponseDto {
     id: number;
     code: string;
