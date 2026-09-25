@@ -15,7 +15,8 @@ public record DepartmentResponseDto(
     int? ManagerId,
     string? ManagerName,
     int TotalEmployees,
-    DateTime CreatedAt
+    DateTime CreatedAt,
+    bool IsActive
 );
 
 public record CreateDepartmentDto(
@@ -27,5 +28,6 @@ public record CreateDepartmentDto(
 public record UpdateDepartmentDto(
     string Code,
     string Name,
-    int? ManagerId
+    int? ManagerId,
+    bool IsActive
 );

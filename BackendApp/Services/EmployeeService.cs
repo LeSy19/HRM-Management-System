@@ -89,6 +89,7 @@ public class EmployeeService
             FullName = dto.FullName,
             Phone = dto.Phone,
             HireDate = dto.HireDate,
+            EndDate = dto.EndDate,
             Status = dto.Status,
             RoleId = dto.RoleId,
             DepartmentId = dto.DepartmentId,
@@ -127,6 +128,7 @@ public class EmployeeService
         employee.FullName = dto.FullName;
         employee.Phone = dto.Phone;
         employee.HireDate = dto.HireDate;
+        employee.EndDate = dto.EndDate;
         employee.Status = dto.Status;
         employee.RoleId = dto.RoleId;
         employee.DepartmentId = dto.DepartmentId;
@@ -144,7 +146,7 @@ public class EmployeeService
         var employee = await _context.Employees.FindAsync(id);
         if (employee == null) return false;
 
-        _context.Employees.Remove(employee);
+        employee.Status = "TERMINATED";
         await _context.SaveChangesAsync();
         return true;
     }
@@ -160,6 +162,7 @@ public class EmployeeService
             e.FullName,
             e.Phone,
             e.HireDate,
+            e.EndDate,
             e.Status,
             e.RoleId,
             e.Role?.Name ?? string.Empty,

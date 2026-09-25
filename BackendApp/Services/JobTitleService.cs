@@ -36,7 +36,8 @@ public class JobTitleService
                 j.Id,
                 j.TitleName,
                 j.Level,
-                j.Employees.Count
+                j.Employees.Count,
+                j.IsActive
             ));
 
         // Thực thi phân trang
@@ -66,7 +67,8 @@ public class JobTitleService
         var job = new JobTitle
         {
             TitleName = dto.TitleName,
-            Level = dto.Level
+            Level = dto.Level,
+            IsActive = true
         };
 
         _context.JobTitles.Add(job);
@@ -85,6 +87,7 @@ public class JobTitleService
 
         job.TitleName = dto.TitleName;
         job.Level = dto.Level;
+        job.IsActive = dto.IsActive;
 
         await _context.SaveChangesAsync();
 
@@ -104,7 +107,7 @@ public class JobTitleService
         if (job.Employees.Any())
             return (false, $"Không thể xóa chức danh '{job.TitleName}' vì đang có {job.Employees.Count} nhân viên đảm nhận.");
 
-        _context.JobTitles.Remove(job);
+        job.IsActive = false;
         await _context.SaveChangesAsync();
         return (true, "Xóa chức danh thành công.");
     }
@@ -115,7 +118,8 @@ public class JobTitleService
             j.Id,
             j.TitleName,
             j.Level,
-            j.Employees.Count
+            j.Employees.Count,
+            j.IsActive
         );
     }
 }

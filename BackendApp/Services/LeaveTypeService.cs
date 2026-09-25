@@ -48,7 +48,8 @@ public class LeaveTypeService
         var leaveType = new LeaveType
         {
             Name = dto.Name,
-            DaysAllowed = dto.DaysAllowed
+            DaysAllowed = dto.DaysAllowed,
+            IsActive = true
         };
 
         _context.LeaveTypes.Add(leaveType);
@@ -75,6 +76,7 @@ public class LeaveTypeService
 
         leaveType.Name = dto.Name;
         leaveType.DaysAllowed = dto.DaysAllowed;
+        leaveType.IsActive = dto.IsActive;
 
         await _context.SaveChangesAsync();
 
@@ -98,7 +100,7 @@ public class LeaveTypeService
             return (false, $"Không thể xóa loại phép '{leaveType.Name}' vì đã có lịch sử cấp quỹ phép hoặc đơn nghỉ phép sử dụng loại này.");
         }
 
-        _context.LeaveTypes.Remove(leaveType);
+        leaveType.IsActive = false;
         await _context.SaveChangesAsync();
 
         return (true, "Xóa loại phép thành công.");
@@ -109,7 +111,8 @@ public class LeaveTypeService
         return new LeaveTypeResponseDto(
             lt.Id,
             lt.Name,
-            lt.DaysAllowed
+            lt.DaysAllowed,
+            lt.IsActive
         );
     }
 

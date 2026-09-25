@@ -42,7 +42,8 @@ public class DepartmentService
                 d.ManagerId,
                 d.Manager != null ? d.Manager.FullName : null,
                 d.Employees.Count,
-                d.CreatedAt
+                d.CreatedAt,
+                d.IsActive
             ));
 
         // Thực thi phân trang
@@ -71,7 +72,8 @@ public class DepartmentService
         {
             Code = dto.Code.ToUpper(),
             Name = dto.Name,
-            ManagerId = dto.ManagerId
+            ManagerId = dto.ManagerId,
+            IsActive = true
         };
 
         _dbContext.Departments.Add(dept);
@@ -100,6 +102,7 @@ public class DepartmentService
         dept.Code = dto.Code.ToUpper();
         dept.Name = dto.Name;
         dept.ManagerId = dto.ManagerId;
+        dept.IsActive = dto.IsActive;
 
         await _dbContext.SaveChangesAsync();
 
@@ -119,7 +122,7 @@ public class DepartmentService
         if (dept.Employees.Any())
             return (false, $"Không thể xóa phòng ban '{dept.Name}' vì đang có {dept.Employees.Count} nhân viên thuộc phòng này.");
 
-        _dbContext.Departments.Remove(dept);
+        dept.IsActive = false;
         await _dbContext.SaveChangesAsync();
         return (true, "Xóa phòng ban thành công.");
     }
@@ -132,7 +135,8 @@ public class DepartmentService
             d.ManagerId,
             d.Manager != null ? d.Manager.FullName : null,
             d.Employees.Count,
-            d.CreatedAt
+            d.CreatedAt,
+            d.IsActive
         );
     }
 

@@ -10,6 +10,8 @@ public class Employee
     public string FullName { get; set; } = string.Empty;
     public string? Phone { get; set; }
     public DateTime HireDate { get; set; }
+    public DateTime EndDate { get; set; }
+
     // Status: PROBATION (Thử việc), ACTIVE (Chính thức), ON_LEAVE (Tạm nghỉ), TERMINATED (Thôi việc)
     public string Status { get; set; } = "PROBATION";
     public int RoleId { get; set; }

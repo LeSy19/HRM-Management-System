@@ -12,7 +12,8 @@ public class LeaveTypeFilterRequestDTO : PaginationParam
 public record LeaveTypeResponseDto(
     int Id,
     string Name,
-    decimal DaysAllowed
+    decimal DaysAllowed,
+    bool IsActive
 );
 
 // DTO tạo mới loại phép
@@ -24,5 +25,6 @@ public record CreateLeaveTypeDto(
 // DTO cập nhật loại phép
 public record UpdateLeaveTypeDto(
     string Name,
-    decimal DaysAllowed
+    decimal DaysAllowed,
+    bool IsActive
 );

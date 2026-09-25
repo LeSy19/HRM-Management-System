@@ -11,7 +11,8 @@ public record JobTitleResponseDto(
     int Id,
     string TitleName,
     string Level,
-    int TotalEmployees
+    int TotalEmployees,
+    bool IsActive
 );
 
 public record CreateJobTitleDto(
@@ -21,5 +22,6 @@ public record CreateJobTitleDto(
 
 public record UpdateJobTitleDto(
     string TitleName,
-    string Level
+    string Level,
+    bool IsActive
 );

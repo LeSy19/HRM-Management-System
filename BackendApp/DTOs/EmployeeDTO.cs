@@ -18,6 +18,7 @@ public record EmployeeResponseDTO(
     string FullName,
     string? Phone,
     DateTime HireDate,
+    DateTime EndDate,
     string Status,
     int RoleId,
     string RoleName,
@@ -38,6 +39,7 @@ public record CreateEmployeeDTO(
     string FullName,
     string? Phone,
     DateTime HireDate,
+    DateTime EndDate,
     string Status = "PROBATION", // PROBATION, ACTIVE, ON_LEAVE, TERMINATED
     int RoleId = 3,             // Mặc định Employee
     int? DepartmentId = null,
@@ -51,6 +53,7 @@ public record UpdateEmployeeDTO(
     string FullName,
     string? Phone,
     DateTime HireDate,
+    DateTime EndDate,
     string Status,
     int RoleId,
     int? DepartmentId,
